@@ -186,11 +186,13 @@ void do_sense() {
  *
  * Suggested payload function for this data
  *
- *  var temp = (((bytes[0] & 0x0F) <<8 | bytes[1]) - 2731) / 10;
- *  var moisture = (((bytes[2] & 0x0F) <<8 | bytes[3]) - 2731) / 10;
+ * function Decoder(bytes, port) {
+ *  var temp = parseInt(bytes[0]);
+ *  var moisture = parseInt(bytes[1]);
  *  
- *  return { payload: temp + ";" + moisture };
- *
+ *  return { temp: temp,
+ *           moisture: moisture };
+ * }
  * *************************************************************/
 void build_data() {
   dataTX[0] = tempC;

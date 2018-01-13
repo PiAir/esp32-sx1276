@@ -3,7 +3,7 @@
  * Author: Martijn Quaedvlieg / Jan de Laet (january 2017)
  * Generated with Generate script by Jan de Laet
  * Modified 12-1-2018 by Pierre Gorissen for use with
- * U8X8 OLED + SX1276
+ * U8X8 OLED + SX1276 + DHT11
  * 
  * *************************************************************/
 #include <SPI.h>
@@ -73,8 +73,6 @@ const lmic_pinmap lmic_pins = {
 // the OLED used
 U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 15, /* data=*/ 4, /* reset=*/ 16);
 
-
-
 /* ************************************************************** 
  * Sensor setup
  * *************************************************************/
@@ -88,21 +86,18 @@ U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 15, /* data=*/ 4, /* reset=*/
 //#define DHTTYPE DHT21   // DHT 21 (AM2301)
 
 // moisture variable
-float moisture = 0.0;
+int moisture = 0;
 // temperature in Celcius
-float tempC = 0.0;
+int tempC = 0;
 // temperature in Fahrenheid
-float tempF = 0.0;
-// temperature in Kelvin
-float tempK = 0.0;
-
+int tempF = 0;
 
 DHT sensor(DHTPIN, DHTTYPE);
 
 unsigned int counter = 0; 
 
 // data to send
-static uint8_t dataTX[4];
+static uint8_t dataTX[2];
 
 /* **************************************************************
  * setup
@@ -162,9 +157,6 @@ void do_sense() {
   // Read temperature as Fahrenheit (isFahrenheit = true)
   tempF = sensor.readTemperature(true);
 
-  // I don't use the tempF, replace tempC with tempF is you like
-  tempK = tempC + 2731;
-
   // Check if any reads failed and exit early (to try again).
   if (isnan(moisture) || isnan(tempC) || isnan(tempF)) {
     #ifdef DEBUG   
@@ -174,13 +166,11 @@ void do_sense() {
   }
 
   u8x8.setCursor(0, 3);
-  u8x8.printf("Hum:  %.1f%%", moisture);  
+  u8x8.printf("Hum:  %d%%", moisture);  
   u8x8.setCursor(0, 5);
-  u8x8.printf("Temp: %.1f *C", tempC);    
+  u8x8.printf("Temp: %dC", tempC);    
    
   #ifdef DEBUG
-    Serial.print(F(" temp Kelvin:"));
-    Serial.print(tempK);
     Serial.print(F(" temp Celcius:"));
     Serial.print(tempC);
     Serial.print(F(" temp Fahrenheit:"));
@@ -203,14 +193,8 @@ void do_sense() {
  *
  * *************************************************************/
 void build_data() {
-  uint16_t itempK = tempK * 10;
-  uint16_t imoisture = moisture * 10;
-    Serial.print(F(" temp iKelvin:"));
-    Serial.println(itempK);  
-  dataTX[0] = itempK;
-  dataTX[1] = itempK >> 8;
-  dataTX[2] = imoisture;
-  dataTX[3] = imoisture >> 8;
+  dataTX[0] = tempC;
+  dataTX[1] = moisture;
 }
 
 /* **************************************************************

@@ -209,12 +209,15 @@ void do_sense() {
  * Suggested payload function for this data
  *
  * function Decoder(bytes, port) {
- *  var temp = parseInt(bytes[0]);
- *  var moisture = parseInt(bytes[1]);
- *  
- *  return { temp: temp,
- *           moisture: moisture };
- * }
+ * var temp = parseInt(bytes[0] + (bytes[1] << 8 ) - 500) / 10 ;
+ * var pressure = parseInt(bytes[2] + (bytes[3] << 8 )) / 10;
+ * // don't know why, but in my case the altitude was about 90 meter to low, so added 90 meters
+ * var altitude = parseInt(bytes[4] + (bytes[5] << 8 ) - 100) / 10; 
+ * return { temp: temp,
+ *        pressure: pressure, 
+ *        altitude: altitude
+ * };
+* }
  * *************************************************************/
 void build_data() {
 
